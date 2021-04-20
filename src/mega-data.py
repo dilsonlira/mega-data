@@ -6,7 +6,7 @@ from os import makedirs
 from os.path import getsize
 from functools import wraps
 from time import time
-from typing import cast
+from typing import cast, Dict, List
 
 from bs4 import BeautifulSoup # type: ignore
 from requests import get
@@ -15,7 +15,7 @@ from requests.exceptions import HTTPError
 
 class HistoryDownloader:
     """Downloads draws history from Mega-Sena website 
-    in HTML, JSON and CSV formats"""
+    and saves in HTML, JSON and CSV formats"""
 
     def __init__(self, folder: str) -> None:
         """folder: folder where files will be saved"""
@@ -34,8 +34,8 @@ class HistoryDownloader:
             makedirs(folder, exist_ok=True)
             self.path = folder + '/' + self.path
 
-        self.json_data = []
-        self.csv_data = []
+        self.json_data = [] # type: List[Dict[str, str]]
+        self.csv_data = ''
 
 
     def download_html(self) -> None:
@@ -116,8 +116,8 @@ class HistoryDownloader:
 
 
     def check_consistency(self) -> None:
-        """Checks if JSON data has all draws 
-        and if not prints what is missing"""
+        """Checks if JSON data has all draws. 
+        If not, prints what is missing"""
 
         if not self.json_data:
             raise Exception('Empty list of draws.')
