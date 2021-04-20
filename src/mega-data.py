@@ -107,8 +107,7 @@ class HistoryDownloader:
         print(f'{file_path} ({getsize(file_path):,} bytes) created.')
 
     def check_consistency(self) -> None:
-        """Checks if JSON data has all draws.
-        If not, prints what is missing"""
+        """Checks if JSON data has all draws. If not, prints what is missing"""
         if not self.json_data:
             raise Exception('Empty list of draws.')
 
