@@ -8,25 +8,24 @@ from functools import wraps
 from time import time
 from typing import cast, Dict, List
 
-from bs4 import BeautifulSoup # type: ignore
+from bs4 import BeautifulSoup  # type: ignore
 from requests import get
 from requests.exceptions import HTTPError
 
 
 class HistoryDownloader:
-    """Downloads draws history from Mega-Sena website 
+    """Downloads draws history from Mega-Sena website
     and saves in HTML, JSON and CSV formats"""
 
     def __init__(self, folder: str) -> None:
         """folder: folder where files will be saved"""
-        
         self.url = (
-        'http://loterias.caixa.gov.br/wps/portal/loterias/landing/megasena/'
-        '!ut/p/a1/04_Sj9CPykssy0xPLMnMz0vMAfGjzOLNDH0MPAzcDbwMPI0sDBxNXAOMw'
-        'rzCjA0sjIEKIoEKnN0dPUzMfQwMDEwsjAw8XZw8XMwtfQ0MPM2I02-AAzgaENIfrh-'
-        'FqsQ9wNnUwNHfxcnSwBgIDUyhCvA5EawAjxsKckMjDDI9FQE-F4ca/dl5/d5/L2dBI'
-        'SEvZ0FBIS9nQSEh/pw/Z7_HGK818G0K8DBC0QPVN93KQ10G1/res/id=historicoH'
-        'TML/c=cacheLevelPage/=/'
+            'http://loterias.caixa.gov.br/wps/portal/loterias/landing/megasena'
+            '/!ut/p/a1/04_Sj9CPykssy0xPLMnMz0vMAfGjzOLNDH0MPAzcDbwMPI0sDBxNXAO'
+            'MwrzCjA0sjIEKIoEKnN0dPUzMfQwMDEwsjAw8XZw8XMwtfQ0MPM2I02-AAzgaENIf'
+            'rh-FqsQ9wNnUwNHfxcnSwBgIDUyhCvA5EawAjxsKckMjDDI9FQE-F4ca/dl5/d5/L'
+            '2dBISEvZ0FBIS9nQSEh/pw/Z7_HGK818G0K8DBC0QPVN93KQ10G1/res/id=histo'
+            'ricoHTML/c=cacheLevelPage/=/'
         )
 
         self.path = datetime.now().strftime('ms_%y%m%d_%H%M%S')
@@ -34,13 +33,11 @@ class HistoryDownloader:
             makedirs(folder, exist_ok=True)
             self.path = folder + '/' + self.path
 
-        self.json_data = [] # type: List[Dict[str, str]]
+        self.json_data = []  # type: List[Dict[str, str]]
         self.csv_data = ''
-
 
     def download_html(self) -> None:
         """Downloads file from url"""
-
         response = get(self.url)
 
         file_path = self.path + '.html'
@@ -51,18 +48,15 @@ class HistoryDownloader:
                 file.write(response.text)
             except HTTPError as err:
                 raise SystemExit(err)
-        
-        self.html_downloaded = True
-        print(f'{file_path} ({getsize(file_path):,} bytes) downloaded.')
 
+        print(f'{file_path} ({getsize(file_path):,} bytes) downloaded.')
 
     def scrape_html(self) -> None:
         """Scrapes HTML file and save data into json_data and csv_data"""
-
         try:
             with open(self.path + '.html', 'r', encoding='utf-8') as html_file:
                 content = html_file.read()
-                bs = BeautifulSoup(content, 'html5lib')
+                bs = BeautifulSoup(content, 'lxml')
                 table = bs.find('table')
                 fields = [item.text.strip() for item in table.find_all('th')]
                 rows = [i for i in table.find_all('tr') if not i.attrs]
@@ -84,25 +78,23 @@ class HistoryDownloader:
                             cities = cities.replace('\n\n', '|')
                             cities = cities.replace('\n', '/')
                             cities = cities.replace(' /', '/')
-                            row_data[15] = cities   
+                            row_data[15] = cities
 
                         if len(row_data) == len(fields):
                             row_data = [i.replace('\n', '') for i in row_data]
-                            row_dict = {f: d for (f, d) 
-                                        in zip(fields, row_data)}  
+                            row_dict = {f: d for (f, d)
+                                        in zip(fields, row_data)}
                             all_draws.append(row_dict)
                             csv_data += ';'.join(row_data) + '\n'
-            
+
             self.json_data = all_draws
             self.csv_data = csv_data
 
         except Exception as error:
             print(error)
 
-
     def write_file(self, file_format: str) -> None:
         """Saves CSV or JSON data into a file"""
-
         file_path = f'{self.path}.{file_format}'
 
         with open(file_path, 'w', encoding='utf-8') as file:
@@ -114,16 +106,14 @@ class HistoryDownloader:
 
         print(f'{file_path} ({getsize(file_path):,} bytes) created.')
 
-
     def check_consistency(self) -> None:
-        """Checks if JSON data has all draws. 
+        """Checks if JSON data has all draws.
         If not, prints what is missing"""
-
         if not self.json_data:
             raise Exception('Empty list of draws.')
 
         DRAW_KEY = 'Concurso'
-        
+
         last_draw_number = int(self.json_data[-1][DRAW_KEY])
         expected_draws = {item + 1 for item in range(last_draw_number)}
         found_draws = {int(item[DRAW_KEY]) for item in self.json_data}
@@ -137,10 +127,8 @@ class HistoryDownloader:
             )
             raise Exception(message)
 
-
     def log_info(self) -> None:
         """Prints the number and the date of the last draw"""
-
         if self.json_data:
             last_draw_number = self.json_data[-1]['Concurso']
             last_draw_date = self.json_data[-1]['Data do Sorteio']
@@ -150,7 +138,6 @@ class HistoryDownloader:
 
 def show_elapsed_time(f):
     """Decorator that prints the elapsed time in seconds"""
-
     @wraps(f)
     def wrapper(*args, **kwargs):
         start = time()
@@ -167,7 +154,6 @@ def main():
     """Downloads HTML file from Mega-Sena website,
     scrapes it and saves data info a JSON and a CSV files
     """
-
     hd = HistoryDownloader('data')
 
     hd.download_html()
