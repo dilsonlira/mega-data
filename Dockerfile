@@ -2,7 +2,7 @@ FROM python:3.6-slim
 WORKDIR /src
 COPY requirements.txt .
 COPY ./src .
-RUN python -m pip install --upgrade pip \
+RUN python -m pip install --no-cache-dir --upgrade pip \
     pip install -r requirements.txt
 EXPOSE 5000
 CMD sh -c \

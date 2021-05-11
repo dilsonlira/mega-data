@@ -7,7 +7,7 @@ if [ "$1" = t ]; then
     query="show databases;show tables"
     qcmd="$cmd -e '$query'"
 elif [ "$1" = q ]; then
-    query="${@:2}"
+    query="${*:2}"
     qcmd="$cmd -e '$query'"
 else
     qcmd=$cmd
