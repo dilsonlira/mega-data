@@ -14,6 +14,8 @@ from bs4 import BeautifulSoup  # type: ignore
 from requests import get
 from requests.exceptions import HTTPError
 
+from dbmanager import DatabaseManager
+
 
 def show_elapsed_time(f):
     """Decorator that prints the elapsed time in seconds"""
@@ -231,13 +233,13 @@ class HistoryDownloader:
         winners_locations_header = 'draw_number;winner_city;winner_state\n'
 
         source_path = f'{self.path}.csv'
-        draws_load_path = f'{self.path}_draws_table_load.csv'
-        winloc_load_path = f'{self.path}_winloc_table_load.csv'
+        self.draws_load_path = f'{self.path}_draws_table_load.csv'
+        self.winloc_load_path = f'{self.path}_winloc_table_load.csv'
 
         with open(source_path, mode='r') as csv_file:
-            with open(draws_load_path, mode='w') as draws_file:
+            with open(self.draws_load_path, mode='w') as draws_file:
                 draws_file.write(draws_header)
-                with open(winloc_load_path, mode='w') as winloc_file:
+                with open(self.winloc_load_path, mode='w') as winloc_file:
                     winloc_file.write(winners_locations_header)
 
                     rows = DictReader(csv_file, delimiter=';')
@@ -289,18 +291,18 @@ class HistoryDownloader:
 
                                 winloc_file.write(line)
 
-        print_file_info(draws_load_path, 'created')
-        print_file_info(winloc_load_path, 'created')
+        print_file_info(self.draws_load_path, 'created')
+        print_file_info(self.winloc_load_path, 'created')
 
 
 @show_elapsed_time
 def main():
-    """Downloads HTML file from Mega-Sena website,
-    scrapes it and saves data info a JSON and a CSV files and
-    makes one CSV per database table
     """
-    hd = HistoryDownloader('scraper-data')
+    Downloads history from Mega-Sena website
+    and loads data into a MySQL database
+    """
 
+    hd = HistoryDownloader('scraper-data')
     hd.download_html()
     hd.scrape_html()
     hd.check_consistency()
@@ -308,6 +310,11 @@ def main():
     hd.write_file('csv')
     hd.create_db_csv_files()
     hd.log_info()
+
+    dm = DatabaseManager(hd.draws_load_path, hd.winloc_load_path)
+    dm.create_tables()
+    dm.insert_data()
+    dm.make_query()
 
 
 if __name__ == '__main__':

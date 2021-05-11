@@ -1,0 +1,7 @@
+mysql-connector==2.2.9
+bs4
+requests
+easierlog
+lxml
+flake8
+mypy

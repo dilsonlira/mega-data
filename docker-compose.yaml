@@ -1,0 +1,27 @@
+services:
+  db:
+    image: mysql:8
+    command: '--default-authentication-plugin=mysql_native_password'
+    restart: always
+    secrets:
+      - db-password
+    volumes:
+      - db-data:/var/lib/mysql
+    environment:
+      - MYSQL_DATABASE=mega
+      - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
+      - TZ=${TIMEZONE}
+  loader:
+    build: .
+    restart: on-failure
+    secrets:
+      - db-password
+    volumes:
+      - ./scraper-data:/src/scraper-data
+    environment:
+      - TZ=${TIMEZONE}
+volumes:
+  db-data:
+secrets:
+  db-password:
+    file: db/password.txt

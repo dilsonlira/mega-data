@@ -1,2 +1,6 @@
-.vscode
+.DS_Store
+.mypy_cache/
+.vscode/
 data/
+db/
+scraper-data/
