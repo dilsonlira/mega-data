@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 from csv import reader
+from typing import Union
 
 from mysql.connector import connect  # type: ignore
 
@@ -99,12 +100,12 @@ class DatabaseManager:
             LINES TERMINATED BY '\n'
             IGNORE 1 ROWS
             (
-                draw_number,draw_city,draw_state,date,
-                number_1,number_2,number_3,number_4,number_5,number_6,
-                winners_6,winners_5,winners_4,
-                prize_6,prize_5,prize_4,
-                collected_value,next_prize,to_next_draw,
-                jackpot,special_draw,note
+                draw_number, draw_city, draw_state, date,
+                number_1, number_2, number_3, number_4, number_5, number_6,
+                winners_6, winners_5, winners_4,
+                prize_6, prize_5, prize_4,
+                collected_value, next_prize, to_next_draw,
+                jackpot, special_draw, note
             )
             '''
         )
@@ -141,3 +142,31 @@ class DatabaseManager:
         print('Last 10 records:')
         print('(draw_number, date, winners_6, winners_5, winners_4)')
         [print(line) for line in result]  # type: ignore
+
+    def get_draw_data(self, draw_number: int) -> Union[dict, None]:
+        """Retrieves a dictionary containing:
+            - draw_number,
+            - date,
+            - the six numbers of the draw"""
+        self.cursor.execute(
+            f'''
+            SELECT
+                date,
+                number_1, number_2, number_3, number_4, number_5, number_6
+            FROM draws
+            WHERE draw_number = {draw_number}
+            '''
+        )
+        result = self.cursor.fetchone()
+
+        if result:
+            draw_date, *numbers = result
+            numbers_list = [str(number).zfill(2) for number in numbers]
+            data = {
+                    'draw_number': draw_number,
+                    'date': draw_date.strftime('%Y-%m-%d'),
+                    'numbers': '-'.join(numbers_list)
+                    }
+            return data
+
+        return None
