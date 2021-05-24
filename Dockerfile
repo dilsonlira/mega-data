@@ -8,5 +8,5 @@ EXPOSE 5000
 CMD sh -c \
     flake8 --exit-zero && \
     mypy . && \
-    sleep 5 && \
+    sleep 10 && \
     python mega-data.py
