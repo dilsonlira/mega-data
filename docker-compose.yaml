@@ -11,8 +11,8 @@ services:
       - MYSQL_DATABASE=mega
       - MYSQL_ROOT_PASSWORD_FILE=/run/secrets/db-password
       - TZ=${TIMEZONE}
-  loader:
-    build: .
+  dataloader:
+    build: dataloader
     restart: on-failure
     secrets:
       - db-password
@@ -20,6 +20,7 @@ services:
       - ./scraper-data:/src/scraper-data
     environment:
       - TZ=${TIMEZONE}
+  # server:
 volumes:
   db-data:
 secrets:
