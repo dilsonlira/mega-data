@@ -3,8 +3,6 @@
 from functools import wraps
 from time import time
 
-from easierlog import log  # type: ignore
-
 from historydownloader import HistoryDownloader
 from dbmanager import DatabaseManager
 
@@ -41,9 +39,6 @@ def main():
     dm = DatabaseManager(hd.draws_load_path, hd.winloc_load_path)
     dm.create_tables()
     dm.insert_data()
-    # dm.make_query()
-    log(dm.get_draw_data(2000))
-    log(dm.get_draw_data(3000))
 
 
 if __name__ == '__main__':

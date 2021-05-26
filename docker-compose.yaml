@@ -20,7 +20,15 @@ services:
       - ./scraper-data:/src/scraper-data
     environment:
       - TZ=${TIMEZONE}
-  # server:
+  apiserver:
+    build: apiserver
+    restart: always
+    secrets:
+      - db-password
+    environment:
+      - TZ=${TIMEZONE}
+    ports:
+      - 5000:5000
 volumes:
   db-data:
 secrets:

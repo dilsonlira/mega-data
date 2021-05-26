@@ -1,0 +1,5 @@
+mysql-connector==2.2.9
+easierlog
+flake8
+mypy
+flask

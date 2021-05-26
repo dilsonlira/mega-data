@@ -1,7 +1,6 @@
 #!/usr/bin/env python
 
 from csv import reader
-from typing import Union
 
 from mysql.connector import connect  # type: ignore
 
@@ -124,49 +123,3 @@ class DatabaseManager:
         self.connection.commit()
 
         print('Database load completed.')
-
-    def make_query(self) -> None:
-        """Makes a query into database to retrieve the last 10 draws"""
-        self.cursor.execute(
-            '''
-            SELECT * FROM (
-                SELECT draw_number, date, winners_6, winners_5, winners_4
-                FROM draws
-                ORDER BY draw_number DESC LIMIT 10
-            ) sub
-            ORDER BY draw_number ASC
-            '''
-        )
-        result = self.cursor.fetchall()
-
-        print('Last 10 records:')
-        print('(draw_number, date, winners_6, winners_5, winners_4)')
-        [print(line) for line in result]  # type: ignore
-
-    def get_draw_data(self, draw_number: int) -> Union[dict, None]:
-        """Retrieves a dictionary containing:
-            - draw_number,
-            - date,
-            - the six numbers of the draw"""
-        self.cursor.execute(
-            f'''
-            SELECT
-                date,
-                number_1, number_2, number_3, number_4, number_5, number_6
-            FROM draws
-            WHERE draw_number = {draw_number}
-            '''
-        )
-        result = self.cursor.fetchone()
-
-        if result:
-            draw_date, *numbers = result
-            numbers_list = [str(number).zfill(2) for number in numbers]
-            data = {
-                    'draw_number': draw_number,
-                    'date': draw_date.strftime('%Y-%m-%d'),
-                    'numbers': '-'.join(numbers_list)
-                    }
-            return data
-
-        return None
